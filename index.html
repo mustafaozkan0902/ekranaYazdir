@@ -2,51 +2,84 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Kripto Fiyatları</title>
+  <title>Hacme Göre İlk 100 Kripto</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 2rem;
-      background: #121212;
-      color: #ffffff;
+      background-color: #0e0e0e;
+      color: #f1f1f1;
+      padding: 20px;
     }
     h1 {
       color: #00ffae;
     }
-    .crypto {
-      margin: 1rem 0;
-      font-size: 1.2rem;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      border: 1px solid #333;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #1f1f1f;
+    }
+    tr:nth-child(even) {
+      background-color: #1a1a1a;
     }
   </style>
 </head>
 <body>
-  <h1>Kripto Para Fiyatları (Binance)</h1>
-  <div class="crypto" id="BTCUSDT">BTC: Yükleniyor...</div>
-  <div class="crypto" id="BCHUSDT">BCH: Yükleniyor...</div>
-  <div class="crypto" id="LTCUSDT">LTC: Yükleniyor...</div>
-  <div class="crypto" id="XRPUSDT">XRP: Yükleniyor...</div>
-  <div class="crypto" id="ETHUSDT">ETH: Yükleniyor...</div>
+  <h1>Binance - Hacme Göre İlk 100 Kripto Çifti</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Çift</th>
+        <th>Son Fiyat ($)</th>
+        <th>24h Hacim (USDT)</th>
+      </tr>
+    </thead>
+    <tbody id="cryptoTable">
+      <tr><td colspan="4">Yükleniyor...</td></tr>
+    </tbody>
+  </table>
 
   <script>
-    const symbols = ["BTCUSDT", "BCHUSDT", "LTCUSDT", "XRPUSDT", "ETHUSDT"];
+    async function fetchTop100() {
+      try {
+        const res = await fetch("https://api.binance.com/api/v3/ticker/24hr");
+        const data = await res.json();
 
-    async function fetchPrices() {
-      for (const symbol of symbols) {
-        try {
-          const res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`);
-          const data = await res.json();
-          document.getElementById(symbol).innerText = `${symbol.slice(0, -4)}: $${parseFloat(data.price).toFixed(2)}`;
-        } catch (err) {
-          document.getElementById(symbol).innerText = `${symbol.slice(0, -4)}: Hata!`;
-        }
+        const usdtPairs = data.filter(item => item.symbol.endsWith("USDT"));
+        usdtPairs.sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume));
+        const top100 = usdtPairs.slice(0, 100);
+
+        const tableBody = document.getElementById("cryptoTable");
+        tableBody.innerHTML = "";
+
+        top100.forEach((coin, index) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${coin.symbol}</td>
+            <td>$${parseFloat(coin.lastPrice).toFixed(4)}</td>
+            <td>$${parseFloat(coin.quoteVolume).toLocaleString()}</td>
+          `;
+          tableBody.appendChild(row);
+        });
+
+      } catch (error) {
+        document.getElementById("cryptoTable").innerHTML = `
+          <tr><td colspan="4">Hata oluştu: ${error.message}</td></tr>
+        `;
       }
     }
 
-    // İlk çalıştırma
-    fetchPrices();
-
-    // 5 saniyede bir tekrar çalıştır
-    setInterval(fetchPrices, 5000);
+    fetchTop100();
+    setInterval(fetchTop100, 2000);
   </script>
 </body>
 </html>
