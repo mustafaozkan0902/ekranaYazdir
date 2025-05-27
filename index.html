@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Kripto Fiyatları</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      background: #121212;
+      color: #ffffff;
+    }
+    h1 {
+      color: #00ffae;
+    }
+    .crypto {
+      margin: 1rem 0;
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Kripto Para Fiyatları (Binance)</h1>
+  <div class="crypto" id="BTCUSDT">BTC: Yükleniyor...</div>
+  <div class="crypto" id="BCHUSDT">BCH: Yükleniyor...</div>
+  <div class="crypto" id="LTCUSDT">LTC: Yükleniyor...</div>
+  <div class="crypto" id="XRPUSDT">XRP: Yükleniyor...</div>
+  <div class="crypto" id="ETHUSDT">ETH: Yükleniyor...</div>
+
+  <script>
+    const symbols = ["BTCUSDT", "BCHUSDT", "LTCUSDT", "XRPUSDT", "ETHUSDT"];
+
+    async function fetchPrices() {
+      for (const symbol of symbols) {
+        try {
+          const res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`);
+          const data = await res.json();
+          document.getElementById(symbol).innerText = `${symbol.slice(0, -4)}: $${parseFloat(data.price).toFixed(2)}`;
+        } catch (err) {
+          document.getElementById(symbol).innerText = `${symbol.slice(0, -4)}: Hata!`;
+        }
+      }
+    }
+
+    // İlk çalıştırma
+    fetchPrices();
+
+    // 5 saniyede bir tekrar çalıştır
+    setInterval(fetchPrices, 5000);
+  </script>
+</body>
+</html>
